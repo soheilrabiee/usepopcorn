@@ -48,16 +48,22 @@ const average = (arr) =>
 export default function App() {
     const [movies, setMovies] = useState([]);
     const [watched, setWatched] = useState([]);
+    // Loader state
+    const [isLoading, setIsLoading] = useState(false);
+
     const query = "interstellar";
 
+    // Fetch data from the api
     useEffect(function () {
         async function fetchMovies() {
+            setIsLoading(true);
             const res = await fetch(
                 `http://www.omdbapi.com/?apikey=${process.env.REACT_APP_API_KEY}&s=${query}`
             );
             const data = await res.json();
             setMovies(data.Search);
             console.log(data.Search);
+            setIsLoading(false);
         }
         fetchMovies();
     }, []);
@@ -70,7 +76,7 @@ export default function App() {
             </NavBar>
             <Main>
                 <Box>
-                    <MovieList movies={movies} />
+                    {isLoading ? <Loader /> : <MovieList movies={movies} />}
                 </Box>
                 <Box>
                     <WatchedSummary watched={watched} />
@@ -79,6 +85,10 @@ export default function App() {
             </Main>
         </>
     );
+}
+
+function Loader() {
+    return <p className="loader">Loading...</p>;
 }
 
 function NavBar({ children }) {
