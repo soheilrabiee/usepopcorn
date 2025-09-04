@@ -76,12 +76,15 @@ export default function App() {
     // Fetch data from the api
     useEffect(
         function () {
+            const controller = new AbortController();
+
             async function fetchMovies() {
                 try {
                     setIsLoading(true);
                     setError("");
                     const res = await fetch(
-                        `http://www.omdbapi.com/?apikey=${process.env.REACT_APP_API_KEY}&s=${query}`
+                        `http://www.omdbapi.com/?apikey=${process.env.REACT_APP_API_KEY}&s=${query}`,
+                        { signal: controller.signal }
                     );
 
                     // Handling not getting data
@@ -96,8 +99,11 @@ export default function App() {
                         throw new Error("Movie not found");
 
                     setMovies(data.Search);
+                    setError("");
                 } catch (err) {
-                    setError(err.message);
+                    if (err.name !== "AbortError") {
+                        setError(err.message);
+                    }
                 } finally {
                     setIsLoading(false);
                 }
@@ -110,6 +116,11 @@ export default function App() {
                 return;
             }
             fetchMovies();
+
+            // clean up function to solve race condition
+            return function () {
+                controller.abort();
+            };
         },
         [query]
     );
