@@ -115,6 +115,7 @@ export default function App() {
                 setError("");
                 return;
             }
+            handleCloseMovie();
             fetchMovies();
 
             // clean up function to solve race condition
@@ -302,6 +303,23 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
         onAddWatched(newWatchedMovie);
         onCloseMovie();
     }
+
+    // event to close movie detail on esc key press
+    useEffect(
+        function () {
+            function callback(e) {
+                if (e.code === "Escape") {
+                    onCloseMovie();
+                }
+            }
+            document.addEventListener("keydown", callback);
+
+            return function () {
+                document.removeEventListener("keydown", callback);
+            };
+        },
+        [onCloseMovie]
+    );
 
     useEffect(
         function () {
